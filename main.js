@@ -1,61 +1,112 @@
 const canvas = document.querySelector('canvas')
 //context
 const c = canvas.getContext('2d')
-canvas.width = innerWidth
-canvas.height = innerHeight
+canvas.width = 1024
+canvas.height = 576
 const gravity = 0.5
 class Mario {
     //player position
-    constructor() {
+    constructor({imageSrc, a, b}) {
         this.position = {
-            x: 100,
+            x: 200,
             y: 100
         }
         this.velocity = {
-            x: 0,
-            y: 0
+            x: a,
+            y: b
         }
-        this.width = 30
-        this.height = 30
+        this.image = new Image()
+        this.image.src = imageSrc
+        this.width = 66
+        this.height = 150
+        
     }
     
     draw() {
-    c.fillStyle = 'red'
-    c.fillRect(this.position.x, this.position.y, this.width, this.height
-        )
+         c.drawImage(
+            this.image,
+            this.position.x, 
+            this.position.y, 
+            this.width, 
+            this.height)
+    
     }
     update() {
         this.draw()
         this.position.y += this.velocity.y 
          this.position.x += this.velocity.x 
+        
         if (this.position.y +this.height + this.velocity.y <= canvas.height)
              this.velocity.y += gravity
-             else  this.velocity.y = 0
-        
     }
 }
 class Floor {
-    constructor({ x,y }) {
+    constructor({ x,y,width}) {
         this.position = {
             x: x,
             y: y
         }
-        this.width = 200
+        this.width = width
         this.height = 20
     }
     draw() {
-        c.fillStyle = 'blue'
+         c.fillStyle = 'yellow'
         c.fillRect(this.position.x, this.position.y, this.width, this.height)
     }
 }
-const mario = new Mario()
-const floors = [new Floor({
-    x: 200,
-    y: 100
+class Background {
+    constructor({ x,y,imageSrc}) {
+        this.position = {
+            x: x,
+            y: y
+       }
+       this.image = new Image()
+       this.image.src = imageSrc
+       this.width = 1024
+       this.height = 576
+
+   }
+   draw() {
+         c.drawImage(this.image, this.position.x, this.position.y)
+    }
+}
+
+
+let mario = [
+    new Mario({
+    x: 0,
+    y: 0,
+    imageSrc: 'Mario1.png',
+    a: 0,
+    b: 0,
+    })
+]
+let floors = [
+    new Floor({
+    x: 0,
+    y: 502,
+    width: 2646
 }), new Floor({
-    x: 500,
-    y: 200
-})]
+    x: 2726,
+    y: 502, 
+    width: 576
+}), new Floor({
+    x: 3419,
+    y: 502,
+    width: 2463
+}), new Floor({
+    x: 5961,
+    y: 502,
+    width: 2152
+})
+]
+let backgrounds = [
+    new Background ({
+    x: 0,
+    y: 0,
+    imageSrc: 'floor2.png'
+    })
+]
 const keys = {
     right: {
         pressed: false
@@ -64,38 +115,95 @@ const keys = {
         pressed: false
     }
 }
+let scrollOffset = 0
+function init() {
+mario = new Mario()
+floors = [new Floor({
+    x: 0,
+    y: 502,
+    width: 2646
+}), new Floor({
+    x: 2726,
+    y: 502,
+    width: 576
+}), new Floor({
+    x: 3419,
+    y: 502,
+    width: 2463
+}), new Floor({
+    x: 5961,
+    y: 502,
+    width: 2152
+})
+] 
+backgrounds = [new Background ({
+    x: 0,
+    y: 0,
+    imageSrc: 'floor2.png'
+    })
+]
+ scrollOffset = 0
+}
 function animate() {
     requestAnimationFrame(animate)
-    c.clearRect(0, 0, canvas.width, canvas.height)
-    mario.update()
+    c.fillStyle = 'white'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    backgrounds.forEach((background) => {
+     background.draw()
+    })
     floors.forEach((floor) => {
      floor.draw()
     })
-    if(keys.right.pressed && mario.position.x < 400) 
-    {
-        mario.velocity.x = 5
-    } else if (keys.left.pressed && mario.position.x > 100) {
+     mario.forEach((mario) => {
+        mario.draw()
+     })
+    if(keys.right.pressed && mario.position.x < 400) {
+    mario.velocity.x = 5
+    } else if ((keys.left.pressed && mario.position.x > 100) || (keys.left.pressed && scrollOffset === 0 && mario.position.x > 0)) {
         mario.velocity.x= -5
     } else {mario.velocity.x = 0 
     
             if (keys.right.pressed) {
+                scrollOffset += 5
                 floors.forEach((floor) => {
                  floor.position.x -= 5
     })
-        } else if (keys.left.pressed) {
-            floors.forEach((floor) => {
-            floor.position.x += 5
+    
+    backgrounds.forEach((background) => {
+     background.position.x -=5
+    })
+        } else if (keys.left.pressed && scrollOffset > 0) {
+        scrollOffset -= 5
+        floors.forEach((floor) => {
+        floor.position.x += 5
+    })
+      backgrounds.forEach((background) => {
+     background.position.x +=5
     })
         }
     } 
+    console.log(scrollOffset)
 //collition detection
 floors.forEach((floor) => {
   
-if (mario.position.y + mario.height <= floor.position.y && mario.position.y + mario.height + mario.velocity.y >= floor.position.y && mario.position.x + mario.width >= floor.position.x && mario.position.x <= floor.position.x + floor.width
+if (mario.position.y + mario.height <= floor.position.y && mario.position.y + mario.height + mario.velocity.y >=
+     floor.position.y && mario.position.x
+     + mario.width >= floor.position.x && mario.position.x 
+     <= floor.position.x + floor.width
         ) {
         mario.velocity.y = 0
     }
     }) 
+    //Victory
+    if (scrollOffset > 6674) {
+        console.log('you win')
+    }
+    //Game Over
+    if (mario.position.y > canvas.height) {
+        console.log('Game Over')
+        init()
+        
+    }
 }
 //callbackfunction
 animate()
@@ -107,7 +215,7 @@ window.addEventListener('keydown', ({ keyCode }) => {
             break
             case 38:
             console.log('up') 
-            mario.velocity.y -= 20
+            mario.velocity.y -= 15
             break
             case 39:
             console.log('right') 
@@ -133,9 +241,9 @@ window.addEventListener('keyup', ({ keyCode }) => {
             keys.right.pressed = false
             break
             case 40:
-            console.log('down') 
-            mario.velocity.y += 20
+            console.log('down')
             break
     }
     console.log(keys.right.pressed)
 })
+  
