@@ -6,33 +6,28 @@ canvas.height = 576
 const gravity = 0.5
 class Mario {
     //player position
-    constructor({imageSrc, a, b}) {
+    constructor() {
         this.position = {
             x: 200,
             y: 100
         }
         this.velocity = {
-            x: a,
-            y: b
+            x: 0,
+            y: 0
         }
-        this.image = new Image()
-        this.image.src = imageSrc
-        this.width = 66
-        this.height = 150
+        this.width = 30
+        this.height = 30
         
     }
     
     draw() {
-         c.drawImage(
-            this.image,
-            this.position.x, 
-            this.position.y, 
-            this.width, 
-            this.height)
-    
+    c.fillStyle = 'red'
+    c.fillRect(this.position.x, this.position.y, this.width, this.height
+        )
     }
     update() {
         this.draw()
+        //gravity
         this.position.y += this.velocity.y 
          this.position.x += this.velocity.x 
         
@@ -50,7 +45,7 @@ class Floor {
         this.height = 20
     }
     draw() {
-         c.fillStyle = 'yellow'
+         c.fillStyle = 'transparent'
         c.fillRect(this.position.x, this.position.y, this.width, this.height)
     }
 }
@@ -65,6 +60,7 @@ class Background {
        this.width = 1024
        this.height = 576
 
+
    }
    draw() {
          c.drawImage(this.image, this.position.x, this.position.y)
@@ -72,15 +68,8 @@ class Background {
 }
 
 
-let mario = [
-    new Mario({
-    x: 0,
-    y: 0,
-    imageSrc: 'Mario1.png',
-    a: 0,
-    b: 0,
-    })
-]
+
+let mario = new Mario()
 let floors = [
     new Floor({
     x: 0,
@@ -116,6 +105,7 @@ const keys = {
     }
 }
 let scrollOffset = 0
+
 function init() {
 mario = new Mario()
 floors = [new Floor({
@@ -142,6 +132,7 @@ backgrounds = [new Background ({
     imageSrc: 'floor2.png'
     })
 ]
+
  scrollOffset = 0
 }
 function animate() {
@@ -154,9 +145,8 @@ function animate() {
     floors.forEach((floor) => {
      floor.draw()
     })
-     mario.forEach((mario) => {
-        mario.draw()
-     })
+     mario.update()
+     //scroll background
     if(keys.right.pressed && mario.position.x < 400) {
     mario.velocity.x = 5
     } else if ((keys.left.pressed && mario.position.x > 100) || (keys.left.pressed && scrollOffset === 0 && mario.position.x > 0)) {
@@ -186,10 +176,7 @@ function animate() {
 //collition detection
 floors.forEach((floor) => {
   
-if (mario.position.y + mario.height <= floor.position.y && mario.position.y + mario.height + mario.velocity.y >=
-     floor.position.y && mario.position.x
-     + mario.width >= floor.position.x && mario.position.x 
-     <= floor.position.x + floor.width
+if (mario.position.y + mario.height <= floor.position.y && mario.position.y + mario.height + mario.velocity.y >= floor.position.y && mario.position.x + mario.width >= floor.position.x && mario.position.x <= floor.position.x + floor.width
         ) {
         mario.velocity.y = 0
     }
@@ -206,6 +193,7 @@ if (mario.position.y + mario.height <= floor.position.y && mario.position.y + ma
     }
 }
 //callbackfunction
+
 animate()
 window.addEventListener('keydown', ({ keyCode }) => {
     switch (keyCode) {
