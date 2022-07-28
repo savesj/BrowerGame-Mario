@@ -234,4 +234,3 @@ window.addEventListener('keyup', ({ keyCode }) => {
     }
     console.log(keys.right.pressed)
 })
-  
